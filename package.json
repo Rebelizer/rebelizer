@@ -1,0 +1,55 @@
+{
+  "name": "rebelizer",
+  "description": "rebelizer",
+  "version": "0.0.1",
+  "homepage": "http://rebelizer.com",
+  "repository": "git://github.com/rebelizer/rebelizer",
+  "main": "lib/rebelizer.js",
+  "dependencies": {
+    "commander": ">= 0.5.0"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.2.0",
+    "grunt-conventional-changelog": "~0.0.2",
+    "grunt-dox": "~0.4.1",
+    "grunt-simple-mocha": "~0.4.0"
+  },
+  "keywords": [
+    "rebelizer",
+    "framework",
+    "web",
+    "rest",
+    "restful",
+    "router",
+    "app",
+    "api"
+  ],
+  "scripts": {
+    "test": "grunt test"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "bin": {
+    "express": "./bin/rebelizer"
+  },
+  "bugs": {
+    "email": "contact@demetriusj.com",
+    "url": "http://github.com/rebelizer/rebelizer/issues"
+  },
+  "author": {
+    "name": "Demetrius Johnson",
+    "email": "contact@demetriusj.com",
+    "url": "http://github.com/demetriusj"
+  },
+  "contributors": [
+    {
+      "name": "Demetrius Johnson",
+      "email": "contact@demetriusj.com"
+    }
+  ],
+  "license": "MIT",
+  "preferGlobal": true,
+  "private": false
+}

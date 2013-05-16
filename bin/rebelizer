@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+var http = require('http')
+  , program = require('commander')
+  , rebelizer = require('../lib/rebelizer');
+
+program
+  .version(require('../package.json').version)
+
+program.parse(process.argv);
