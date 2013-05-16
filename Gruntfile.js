@@ -3,6 +3,12 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
+    pkg: {
+      repository: {
+        url:'http://github.com/Rebelizer/rebelizer'
+      },
+      version: '0.0.1 (Sneetches)'
+    },
     dox: {
       options: {
         title: "Rebelizer API Docs"
