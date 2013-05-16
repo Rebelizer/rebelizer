@@ -22,7 +22,8 @@ module.exports = function(grunt) {
     },
     changelog: {
       options: {
-        dest: 'Changelog.md'
+        dest: 'Changelog.md',
+        prepend: true
       }
     },
     simplemocha: {
