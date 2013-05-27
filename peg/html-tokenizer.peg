@@ -1,5 +1,10 @@
 {
-  var flattenArg = function(set, slot) {
+  const TAG_OPEN = 'TAG_OPEN',
+        TAG_CLOSE = 'TAG_CLOSE',
+        TAG_SELF_CLOSING = 'TAG_SELF_CLOSING',
+        COMMENT = 'COMMENT';
+
+  function flattenArg(set, slot) {
      var result=[];
      for(var i in set) {
        result.push(set[i][slot]);
@@ -11,7 +16,8 @@
 
 start = content
 
-NON_PARSE_TAGS = "script"i / "demi"i
+NON_PARSE_TAGS_ = "script"i
+NON_PARSE_TAGS =
 
 TAG_OPEN                                = '<'
 TAG_CLOSE                               = '>'
@@ -63,7 +69,7 @@ COMMENT_BLOCK = text:(!COMMENT_END .)* {
 
 COMMENT = COMMENT_BEGIN text:COMMENT_BLOCK COMMENT_END {
   return {
-    type: 'COMMENT',
+    type: COMMENT,
     value: text
   };
 }
@@ -79,15 +85,15 @@ ATTRIBUTE_VALUE = DOUBLE_QUOTE attr:([^"]*) DOUBLE_QUOTE            {return attr
 ATTRIBUTE = key:LABEL EQ value:ATTRIBUTE_VALUE WHITESPACE?          {return {key: key, value: value};}
   / key:LABEL WHITESPACE?                                           {return {key: key, value: null};}
 
-ELEMENT = TAG_OPEN tag:LABEL WHITESPACE attr:ATTRIBUTE* TAG_CLOSE   {return {tag: tag, attr: attr, type: 'TAG_OPEN'};}
-  / TAG_OPEN tag:LABEL WHITESPACE? TAG_CLOSE                        {return {tag: tag, attr: null, type: 'TAG_OPEN'};}
-  / END_TAG tag:LABEL WHITESPACE? TAG_CLOSE                         {return {tag: tag, attr: null, type: 'TAG_CLOSE'};}
-  / TAG_OPEN tag:LABEL WHITESPACE? TAG_SELF_CLOSING                 {return {tag: tag, attr: null, type: 'TAG_SELF_CLOSING'};}
-  / TAG_OPEN tag:LABEL WHITESPACE attr:ATTRIBUTE* TAG_SELF_CLOSING  {return {tag: tag, attr: attr, type: 'TAG_SELF_CLOSING'};}
+ELEMENT = TAG_OPEN tag:LABEL WHITESPACE attr:ATTRIBUTE* TAG_CLOSE   {return {tag: tag, attr: attr, type: TAG_OPEN};}
+  / TAG_OPEN tag:LABEL WHITESPACE? TAG_CLOSE                        {return {tag: tag, attr: null, type: TAG_OPEN};}
+  / END_TAG tag:LABEL WHITESPACE? TAG_CLOSE                         {return {tag: tag, attr: null, type: TAG_CLOSE};}
+  / TAG_OPEN tag:LABEL WHITESPACE? TAG_SELF_CLOSING                 {return {tag: tag, attr: null, type: TAG_SELF_CLOSING};}
+  / TAG_OPEN tag:LABEL WHITESPACE attr:ATTRIBUTE* TAG_SELF_CLOSING  {return {tag: tag, attr: attr, type: TAG_SELF_CLOSING};}
 
 // special tags to ignore parsing and return raw text block inside the tags
 
-INGORE_BEGIN = tag:TAG_OPEN NON_PARSE_TAGS WHITESPACE? attr:ATTRIBUTE* TAG_CLOSE text:(!INGORE_END .)* end:INGORE_END {
+INGORE_BEGIN = tag:TAG_OPEN (NON_PARSE_TAGS_ / NON_PARSE_TAGS) WHITESPACE? attr:ATTRIBUTE* TAG_CLOSE text:(!INGORE_END .)* end:INGORE_END {
   return {
     tag: tag,
     attr: attr,
@@ -96,8 +102,8 @@ INGORE_BEGIN = tag:TAG_OPEN NON_PARSE_TAGS WHITESPACE? attr:ATTRIBUTE* TAG_CLOSE
   };
 }
 
-INGORE_END = END_TAG tag:NON_PARSE_TAGS WHITESPACE? attr:ATTRIBUTE* TAG_CLOSE   {return {tag:tag, attr:attr, type:'TAG_CLOSE'};}
-  / END_TAG tag:NON_PARSE_TAGS WHITESPACE? TAG_CLOSE                            {return {tag:tag, attr:null, type:'TAG_CLOSE'};}
+INGORE_END = END_TAG tag:NON_PARSE_TAGS WHITESPACE? attr:ATTRIBUTE* TAG_CLOSE   {return {tag:tag, attr:attr, type:TAG_CLOSE};}
+  / END_TAG tag:NON_PARSE_TAGS WHITESPACE? TAG_CLOSE                            {return {tag:tag, attr:null, type:TAG_CLOSE};}
 
 // XML process instructions
 
