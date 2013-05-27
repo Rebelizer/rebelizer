@@ -1,0 +1,108 @@
+{
+  var flattenArg = function(set, slot) {
+     var result=[];
+     for(var i in set) {
+       result.push(set[i][slot]);
+     }
+
+     return result;
+   }
+}
+
+start = content
+
+NON_PARSE_TAGS = "script"i / "demi"i
+
+TAG_OPEN                                = '<'
+TAG_CLOSE                               = '>'
+TAG_SELF_CLOSING                        = '/>'
+END_TAG                                 = '</'
+
+PROCESS_INSTRUCTION_START               = '<!' / '<?'
+
+CDATA_START                             = '<![CDATA['
+CDATA_END                               = ']]>'
+
+DOUBLE_QUOTE                            = '"'
+SINGLE_QUOTE                            = "'"
+
+WHITESPACE                              = [\u0020\u0009\u000D\u000A]+
+
+LABEL_MORE_CHARS                        = [0-9-\u00B7\u0300-\u036F\u203F-\u2040] / "."
+LABEL_FIRST_CHAR                        = [A-Za-z_:\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF]
+
+GRAB_BAG = str:[^<]+ {
+  return str.join('');
+}
+
+// CDATA
+
+CDATA = CDATA_START block:CDATA_BLOCK CDATA_END {
+  return {
+    tag: 'CDATA',
+    value: block
+  };
+}
+
+CDATA_BLOCK = block:(!CDATA_END GRAB_BAG*) {
+  return flattenArg(block,1);
+}
+
+LABEL = a:LABEL_FIRST_CHAR b:(LABEL_MORE_CHARS / LABEL_FIRST_CHAR)* {
+  return a + b.join('');
+}
+
+// comments
+
+COMMENT_BEGIN = TAG_OPEN '!--'
+COMMENT_END = '--' TAG_CLOSE
+
+COMMENT_BLOCK = text:(!COMMENT_END .)* {
+  return flattenArg(text,1).join('');
+}
+
+COMMENT = COMMENT_BEGIN text:COMMENT_BLOCK COMMENT_END {
+  return {
+    type: 'COMMENT',
+    value: text
+  };
+}
+
+// elements
+
+EQ = WHITESPACE? '=' WHITESPACE?
+
+ATTRIBUTE_VALUE = DOUBLE_QUOTE attr:([^"]*) DOUBLE_QUOTE            {return attr.join('');}
+  / SINGLE_QUOTE attr:([^']*) SINGLE_QUOTE                          {return attr.join('');}
+  / attr:[^ >]*                                                     {return attr.join('');}
+
+ATTRIBUTE = key:LABEL EQ value:ATTRIBUTE_VALUE WHITESPACE?          {return {key: key, value: value};}
+  / key:LABEL WHITESPACE?                                           {return {key: key, value: null};}
+
+ELEMENT = TAG_OPEN tag:LABEL WHITESPACE attr:ATTRIBUTE* TAG_CLOSE   {return {tag: tag, attr: attr, type: 'TAG_OPEN'};}
+  / TAG_OPEN tag:LABEL WHITESPACE? TAG_CLOSE                        {return {tag: tag, attr: null, type: 'TAG_OPEN'};}
+  / END_TAG tag:LABEL WHITESPACE? TAG_CLOSE                         {return {tag: tag, attr: null, type: 'TAG_CLOSE'};}
+  / TAG_OPEN tag:LABEL WHITESPACE? TAG_SELF_CLOSING                 {return {tag: tag, attr: null, type: 'TAG_SELF_CLOSING'};}
+  / TAG_OPEN tag:LABEL WHITESPACE attr:ATTRIBUTE* TAG_SELF_CLOSING  {return {tag: tag, attr: attr, type: 'TAG_SELF_CLOSING'};}
+
+// special tags to ignore parsing and return raw text block inside the tags
+
+INGORE_BEGIN = tag:TAG_OPEN NON_PARSE_TAGS WHITESPACE? attr:ATTRIBUTE* TAG_CLOSE text:(!INGORE_END .)* end:INGORE_END {
+  return {
+    tag: tag,
+    attr: attr,
+    text: flattenArg(text,1).join(''),
+    end: end
+  };
+}
+
+INGORE_END = END_TAG tag:NON_PARSE_TAGS WHITESPACE? attr:ATTRIBUTE* TAG_CLOSE   {return {tag:tag, attr:attr, type:'TAG_CLOSE'};}
+  / END_TAG tag:NON_PARSE_TAGS WHITESPACE? TAG_CLOSE                            {return {tag:tag, attr:null, type:'TAG_CLOSE'};}
+
+// XML process instructions
+
+PROCESS_INSTRUCTION = PROCESS_INSTRUCTION_START (!TAG_CLOSE .)* TAG_CLOSE {
+  return 'process inst';
+}
+
+content = (COMMENT / PROCESS_INSTRUCTION / CDATA / INGORE_BEGIN / ELEMENT / GRAB_BAG)*

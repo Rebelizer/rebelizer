@@ -6,7 +6,8 @@
   "repository": "git://github.com/rebelizer/rebelizer",
   "main": "lib/rebelizer.js",
   "dependencies": {
-    "commander": ">= 0.5.0"
+    "commander": "~0.5.0",
+    "pegjs": "~0.7.0"
   },
   "devDependencies": {
     "expectations": "~0.1.6",
