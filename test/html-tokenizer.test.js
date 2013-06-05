@@ -2,7 +2,7 @@ require('expectations');
 
 var util = require('util')
   , fs = require('fs')
-  , pegjs = require('pegjs')
+  , pegjs = require('pegjs');
 
 describe('html tokenizer', function() {
 
@@ -35,56 +35,63 @@ describe('html tokenizer', function() {
     result = parser.parse('hello world<test>   ');
     expect(result).toEqual([ 'hello world', { tag: 'test', attr: null, type: 'TAG_OPEN' }, '   ' ]);
   });
-/*
+
   it("should handle attrubutes with out values", function() {
     var result = parser.parse('<  hello attr1>');
-    console.log(JSON.stringify(result))
-    //expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:null}],type:"TAG_OPEN"}]);
+    expect(result).toEqual([{"tag":"hello","attr":[{"key":"attr1","value":null}],"type":"TAG_OPEN"}]);
 
-  });
-*/
-
-  it("should handle attrubutes with out values", function() {
-    var result = parser.parse('<hello attr1>');
-    //console.log(JSON.stringify(result))
+    result = parser.parse('<hello attr1>');
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:null}],type:"TAG_OPEN"}]);
 
+    result = parser.parse('< hello attr1 >');
+    expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:null}],type:"TAG_OPEN"}]);
+
+    result = parser.parse('<\nhello attr1\n>');
+    expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:null}],type:"TAG_OPEN"}]);
   });
 
   it("should handle attrubutes with empty value", function() {
     var result = parser.parse('<hello attr1=>');
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:""}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse('<hello attr1 =>');
+    result = parser.parse('<hello attr1 =>');
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:""}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse('<hello attr1= >');
+    result = parser.parse('<hello attr1= >');
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:""}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse('<hello attr1=    >');
+    result = parser.parse('<hello attr1=    >');
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:""}],type:"TAG_OPEN"}]);
 
+    result = parser.parse('< hello attr1=    >');
+    expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:""}],type:"TAG_OPEN"}]);
   });
 
   it("should handle string double quotied attrubutes", function() {
     var result = parser.parse('<hello attr1="test">');
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse('<hello attr1 = "test">');
+    result = parser.parse('<hello attr1 = "test">');
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse('<hello attr1=\t\n "test">');
+    result = parser.parse('<hello attr1 = "test\n">');
+    expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test\n"}],type:"TAG_OPEN"}]);
+
+    result = parser.parse('<hello attr1=\t\n "test">');
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_OPEN"}]);
+
+    result = parser.parse('<hello attr1=\t\n "test" \t\nattr2="test2">');
+    expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"},{key:"attr2",value:"test2"}],type:"TAG_OPEN"}]);
   });
 
   it("should handle string single quotied attrubutes", function() {
     var result = parser.parse("<hello attr1='test'>");
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse("<hello attr1 = 'test'>");
+    result = parser.parse("<hello attr1 = 'test'>");
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse("<hello attr1\t =\t 'test'>");
+    result = parser.parse("<hello attr1\t =\t 'test'>");
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_OPEN"}]);
   });
 
@@ -92,25 +99,28 @@ describe('html tokenizer', function() {
     var result = parser.parse('<hello data-attr1>');
     expect(result).toEqual([{tag:"hello",attr:[{key:"data-attr1",value:null}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse('<hello data-attr1=>');
+    result = parser.parse('<hello data-attr1=>');
     expect(result).toEqual([{tag:"hello",attr:[{key:"data-attr1",value:""}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse('<hello data-attr1="test">');
+    result = parser.parse('<hello data-attr1="test">');
     expect(result).toEqual([{tag:"hello",attr:[{key:"data-attr1",value:"test"}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse('<hello data-attr1 = "">');
+    result = parser.parse('<hello data-attr1 = "">');
     expect(result).toEqual([{tag:"hello",attr:[{key:"data-attr1",value:""}],type:"TAG_OPEN"}]);
+  });
+
+  it("should handle number and dot attraibut names", function() {
 
     var result = parser.parse('<hello d0._attr1>');
     expect(result).toEqual([{tag:"hello",attr:[{key:"d0._attr1",value:null}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse('<hello d0._attr1=>');
+    result = parser.parse('<hello d0._attr1=>');
     expect(result).toEqual([{tag:"hello",attr:[{key:"d0._attr1",value:""}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse('<hello d0._attr1="test">');
+    result = parser.parse('<hello d0._attr1="test">');
     expect(result).toEqual([{tag:"hello",attr:[{key:"d0._attr1",value:"test"}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse('<hello d0._attr1 = "">');
+    result = parser.parse('<hello d0._attr1 = "">');
     expect(result).toEqual([{tag:"hello",attr:[{key:"d0._attr1",value:""}],type:"TAG_OPEN"}]);
   });
 
@@ -118,21 +128,27 @@ describe('html tokenizer', function() {
     var result = parser.parse("<hello attr1='test' attr2='test'>");
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"},{key:"attr2",value:"test"}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse("<hello attr1='test' attr2=test>");
-    expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"},{key:"attr2",value:"test"}],type:"TAG_OPEN"}])
+    result = parser.parse("<hello attr1='test' attr2=test>");
+    expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"},{key:"attr2",value:"test"}],type:"TAG_OPEN"}]);
 
-    var result = parser.parse("<hello attr1='test' attr2=test attr3-foo>");
-    expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"},{key:"attr2",value:"test"},{key:"attr3-foo",value:null}],type:"TAG_OPEN"}])
+    result = parser.parse("<hello attr1='test' attr2=test attr3-foo>");
+    expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"},{key:"attr2",value:"test"},{key:"attr3-foo",value:null}],type:"TAG_OPEN"}]);
   });
-/*
-  it("should handle string single quotied attrubutes 6", function() {
+
+  it("should handle string rand quotied in attrubute list", function() {
     var result = parser.parse("<hello attr1='test' t'>");
-    console.log(JSON.stringify(result))
-    //expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_OPEN"}]);
-    expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_SELF_CLOSING"}])
+    expect(result).toEqual([{"tag":"hello","attr":[{"key":"attr1","value":"test"},{"key":"t","value":null},{}],"type":"TAG_OPEN"}]);
 
+    result = parser.parse("<hello attr1='test' t'sdfs dddd='DDD'>");
+    expect(result).toEqual([{"tag":"hello","attr":[{"key":"attr1","value":"test"},{"key":"t","value":null},{},{"key":"sdfs","value":null},{"key":"dddd","value":"DDD"}],"type":"TAG_OPEN"}]);
+
+    result = parser.parse("<hello attr1='test' t\"sdfs dddd='DDD'>");
+    expect(result).toEqual([{"tag":"hello","attr":[{"key":"attr1","value":"test"},{"key":"t","value":null},{},{"key":"sdfs","value":null},{"key":"dddd","value":"DDD"}],"type":"TAG_OPEN"}]);
+
+    result = parser.parse("<hello '>");
+    expect(result).toEqual([{"tag":"hello","attr":[{}],"type":"TAG_OPEN"}]);
   });
-*/
+
   it("should handle self closing tags with attributes", function() {
     var result = parser.parse("<hello attr1='test'/>");
     expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_SELF_CLOSING"}]);
@@ -140,76 +156,71 @@ describe('html tokenizer', function() {
 
   it("should handle self closing tags", function() {
     var result = parser.parse("<hello />");
-    expect(result).toEqual([{tag:"hello",attr:null,type:"TAG_SELF_CLOSING"}])
+    expect(result).toEqual([{tag:"hello",attr:null,type:"TAG_SELF_CLOSING"}]);
 
-    var result = parser.parse("<hello/>");
-    expect(result).toEqual([{tag:"hello",attr:null,type:"TAG_SELF_CLOSING"}])
-/*
-    var result = parser.parse("<hello / >");
-    console.log(JSON.stringify('!!!!!!', result))
-    //expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_OPEN"}]);
-    expect(result).toEqual([{tag:"hello",attr:null,type:"TAG_SELF_CLOSING"}])
-*/
+    result = parser.parse("<hello/>");
+    expect(result).toEqual([{tag:"hello",attr:null,type:"TAG_SELF_CLOSING"}]);
+
+    result = parser.parse("<hello / >");
+    expect(result).toEqual([{tag:"hello",attr:null,type:"TAG_SELF_CLOSING"}]);
   });
 
   it("should handle end tags", function() {
     var result = parser.parse("</hello>");
-    expect(result).toEqual([{tag:"hello", attr:null, type:"TAG_CLOSE"}])
+    expect(result).toEqual([{tag:"hello", attr:null, type:"TAG_CLOSE"}]);
 
-    var result = parser.parse("</hello >");
-    expect(result).toEqual([{tag:"hello", attr:null, type:"TAG_CLOSE"}])
+    result = parser.parse("</hello >");
+    expect(result).toEqual([{tag:"hello", attr:null, type:"TAG_CLOSE"}]);
+
+    result = parser.parse("</ hello >");
+    expect(result).toEqual([{tag:"hello", attr:null, type:"TAG_CLOSE"}]);
   });
-/*
-  it("should handle string single quotied attrubutes 11", function() {
-    var result = parser.parse("</ hello >");
-    console.log(JSON.stringify(result))
-    //expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_OPEN"}]);
-    expect(result).toEqual([{type:"COMMENT",value:" \n <!-- dddd"}," x-->"])
-  });
-
-  it("should handle string single quotied attrubutes", function() {
-    var result = parser.parse("</ hello too="xxx">");
-    console.log(JSON.stringify(result))
-    //expect(result).toEqual([{tag:"hello",attr:[{key:"attr1",value:"test"}],type:"TAG_OPEN"}]);
-  });
-*/
-
-
 
   it("should handle comments", function() {
     var result = parser.parse("<!-- -->");
-    expect(result).toEqual([{type:"COMMENT",value:" "}])
+    expect(result).toEqual([{type:"COMMENT",value:" "}]);
 
-    var result = parser.parse("<!-- \nx-->");
-    expect(result).toEqual([{type:"COMMENT",value:" \nx"}])
+    result = parser.parse("<!-- \nx-->");
+    expect(result).toEqual([{type:"COMMENT",value:" \nx"}]);
 
-    var result = parser.parse("<!-- \n <!-- dddd--> x-->");
-    expect(result).toEqual([{type:"COMMENT",value:" \n <!-- dddd"}," x-->"])
+    result = parser.parse("<!-- \n <!-- dddd--> x-->");
+    expect(result).toEqual([{type:"COMMENT",value:" \n <!-- dddd"}," x-->"]);
 
-    var result = parser.parse('<!-- --> xxx<p class=""> -->');
-    expect(result).toEqual([{type:"COMMENT",value:" "}," xxx",{tag:"p", attr:[{key:"class",value:""}],type:"TAG_OPEN"}," -->"])
+    result = parser.parse('<!-- --> xxx<p class=""> -->');
+    expect(result).toEqual([{type:"COMMENT",value:" "}," xxx",{tag:"p", attr:[{key:"class",value:""}],type:"TAG_OPEN"}," -->"]);
 
-    var result = parser.parse("<!---->");
-    expect(result).toEqual([{type:"COMMENT",value:""}])
+    result = parser.parse("<!---->");
+    expect(result).toEqual([{type:"COMMENT",value:""}]);
 
-    var result = parser.parse("<!-- foo -- -->");
-    expect(result).toEqual([{type:"COMMENT",value:" foo -- "}])
+    result = parser.parse("<!-- foo -- -->");
+    expect(result).toEqual([{type:"COMMENT",value:" foo -- "}]);
 
-    var result = parser.parse("<!-- foo ---->");
-    expect(result).toEqual([{type:"COMMENT",value:" foo --"}])
+    result = parser.parse("<!-- foo ---->");
+    expect(result).toEqual([{type:"COMMENT",value:" foo --"}]);
 
-    var result = parser.parse("<!---- foo -->");
-    expect(result).toEqual([{type:"COMMENT",value:"-- foo "}])
-
-    /*
-    var result = parser.parse("<a href='' <!---- foo --> class=''/>test</a>");
-    expect(result).toEqual([{type:"COMMENT",value:"-- foo "}])
-    */
+    result = parser.parse("<!---- foo -->");
+    expect(result).toEqual([{type:"COMMENT",value:"-- foo "}]);
   });
-/*
-  it("should handle comments", function() {
-    var result = parser.parse("<?XML ffff xxxx\n?>");
+
+  // TODO: need to support comments inside tags
+  /*
+  it("should handle comments in attributes", function() {
+    var result = parser.parse("<a href='A<!-- foo -->B'>");
+    console.log(JSON.stringify(result))
     expect(result).toEqual([{type:"COMMENT",value:" "}])
+
+    result = parser.parse("<a <!-- foo --> href='AB'>");
+    console.log(JSON.stringify(result))
+    expect(result).toEqual([{type:"COMMENT",value:" \nx"}])
+  });
+  */
+
+  // TODO: need to build test for XML, CDATA, etc.
+  /*
+  it("should handle XML", function() {
+    var result = parser.parse("<?XML ffff xxxx\n?>");
+    console.log(JSON.stringify(result))
+    //expect(result).toEqual([{type:"COMMENT",value:" "}])
   });
 
   it("should handle comments", function() {
@@ -221,13 +232,19 @@ describe('html tokenizer', function() {
     var result = parser.parse("<CDATA[[]]>");
     expect(result).toEqual([{type:"COMMENT",value:" "}])
   });
-*/
+  */
 
-  it("should handle comments", function() {
-    var input = fs.readFileSync('./test/fixture/messy-markup.html').toString()
-    var output = JSON.parse(fs.readFileSync('./test/fixture/messy-markup.json').toString())
+  it("should handle big messy makrup file", function() {
+    var input = fs.readFileSync('./test/fixture/messy-markup.html').toString();
+    var output = JSON.parse(fs.readFileSync('./test/fixture/messy-markup.json').toString());
+    var start = new Date();
     var result = parser.parse(input);
-    expect(result).toEqual(output)
+    var end = new Date() - start;
+    if(end > 100) {
+      throw new Error('The parser is to slow!');
+    }
+
+    expect(result).toEqual(output);
   });
 
 
