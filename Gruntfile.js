@@ -22,7 +22,8 @@ module.exports = function(grunt) {
       options: {
         curly: true,
         eqeqeq: false,
-        eqnull: true
+        eqnull: true,
+        laxcomma: 'off'
       },
       all: ['Gruntfile.js', 'index.js', 'lib/**/*.js', 'test/**/*.js']
     },
