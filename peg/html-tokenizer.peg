@@ -20,7 +20,7 @@ NON_PARSE_TAGS = "script"i
 
 TAG_OPEN                                = '<'
 TAG_CLOSE                               = '>'
-TAG_SELF_CLOSING                        = '/>'
+TAG_SELF_CLOSING                        = '/' WHITESPACE? '>'
 END_TAG                                 = '</'
 
 PROCESS_INSTRUCTION_START               = '<!' / '<?'
@@ -83,12 +83,14 @@ ATTRIBUTE_VALUE = DOUBLE_QUOTE attr:([^"]*) DOUBLE_QUOTE            {return attr
 
 ATTRIBUTE = key:LABEL EQ value:ATTRIBUTE_VALUE WHITESPACE?          {return {key: key, value: value};}
   / key:LABEL WHITESPACE?                                           {return {key: key, value: null};}
+  / SINGLE_QUOTE                                                    {return {};}
+  / DOUBLE_QUOTE                                                    {return {};}
 
-ELEMENT = TAG_OPEN tag:LABEL WHITESPACE attr:ATTRIBUTE* TAG_CLOSE   {return {tag: tag, attr: attr, type: TAG_OPEN};}
-  / TAG_OPEN tag:LABEL WHITESPACE? TAG_CLOSE                        {return {tag: tag, attr: null, type: TAG_OPEN};}
-  / END_TAG tag:LABEL WHITESPACE? TAG_CLOSE                         {return {tag: tag, attr: null, type: TAG_CLOSE};}
-  / TAG_OPEN tag:LABEL WHITESPACE? TAG_SELF_CLOSING                 {return {tag: tag, attr: null, type: TAG_SELF_CLOSING};}
-  / TAG_OPEN tag:LABEL WHITESPACE attr:ATTRIBUTE* TAG_SELF_CLOSING  {return {tag: tag, attr: attr, type: TAG_SELF_CLOSING};}
+ELEMENT = TAG_OPEN WHITESPACE? tag:LABEL WHITESPACE attr:ATTRIBUTE* TAG_CLOSE   {return {tag: tag, attr: attr, type: TAG_OPEN};}
+  / TAG_OPEN WHITESPACE? tag:LABEL WHITESPACE? TAG_CLOSE                        {return {tag: tag, attr: null, type: TAG_OPEN};}
+  / END_TAG WHITESPACE? tag:LABEL WHITESPACE? TAG_CLOSE                         {return {tag: tag, attr: null, type: TAG_CLOSE};}
+  / TAG_OPEN WHITESPACE? tag:LABEL WHITESPACE? TAG_SELF_CLOSING                 {return {tag: tag, attr: null, type: TAG_SELF_CLOSING};}
+  / TAG_OPEN WHITESPACE? tag:LABEL WHITESPACE attr:ATTRIBUTE* TAG_SELF_CLOSING  {return {tag: tag, attr: attr, type: TAG_SELF_CLOSING};}
 
 // special tags to ignore parsing and return raw text block inside the tags
 
