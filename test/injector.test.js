@@ -10,7 +10,9 @@ var util = require('util')
 function valueFn(value) {return function() {return value;};}
 
 function extend(a, b) {
-  for (var key in b) a[key] = b[key];
+  for (var key in b) {
+    a[key] = b[key];
+  }
   return a;
 }
 
@@ -177,7 +179,7 @@ describe('injector', function() {
 
 
     it('should strip leading and trailing underscores from arg name during inference', function() {
-      function beforeEachFn(_foo_) { /* foo = _foo_ */ };
+      function beforeEachFn(_foo_) { /* foo = _foo_ */ }
       expect(annotate(beforeEachFn)).toEqual(['foo']);
     });
 
@@ -270,7 +272,7 @@ describe('injector', function() {
     });
 
     it('should run symbolic modules', function() {
-      var ctx = injectorContainer()
+      var ctx = injectorContainer();
       ctx.module('myModule', []).value('a', 'abc');
       var $injector = ctx.createInjector(['myModule']);
       expect($injector.get('a')).toEqual('abc');
@@ -315,13 +317,13 @@ describe('injector', function() {
               $provide.constant({a: 'A', b:'B'});
               return function(a) {
                 log.push(a);
-              }
+              };
             },
             function(abc) {
               log.push(abc);
               return function(b) {
                 log.push(b);
-              }
+              };
             }
           ]).get('abc');
           expect(log).toEqual([123, 'A', 'B']);
@@ -404,7 +406,7 @@ describe('injector', function() {
 
 
         it('should configure $provide provider type', function() {
-          function Type() {};
+          function Type() {}
           Type.prototype.$get = function() {
             expect(this instanceof Type).toBe(true);
             return 'abc';
@@ -418,7 +420,7 @@ describe('injector', function() {
         it('should configure $provide using an array', function() {
           function Type(PREFIX) {
             this.prefix = PREFIX;
-          };
+          }
           Type.prototype.$get = function() {
             return this.prefix + 'def';
           };
@@ -509,7 +511,7 @@ describe('injector', function() {
               return function(val) {
                 log.push('myService:' + val + ',' + dep1);
                 return 'origReturn';
-              }
+              };
             }]);
 
             $provide.decorator('myService', function($delegate) {
@@ -536,7 +538,7 @@ describe('injector', function() {
               return function(val) {
                 log.push('myService:' + val);
                 return 'origReturn';
-              }
+              };
             });
 
             $provide.decorator('myService', function($delegate, dep1) {
@@ -604,8 +606,8 @@ describe('injector', function() {
         expect(function() {
           container.createInjector([function($provide){
             $provide.factory('service', function(service){});
-            return function(service) {}
-          }])
+            return function(service) {};
+          }]);
         }).toThrow('Circular dependency: service');
       });
 
@@ -615,8 +617,8 @@ describe('injector', function() {
           container.createInjector([function($provide){
             $provide.factory('a', function(b){});
             $provide.factory('b', function(a){});
-            return function(a) {}
-          }])
+            return function(a) {};
+          }]);
         }).toThrow('Circular dependency: b <- a');
       });
     });
@@ -684,7 +686,7 @@ describe('injector', function() {
 
     it('should invoke method which is annotated', function() {
       expect($injector.invoke(extend(function(b, a) {
-        return a + ':' + b
+        return a + ':' + b;
       }, {$inject:['book', 'author']}))).toEqual('melville:moby');
       expect($injector.invoke(extend(function(b, a) {
         expect(this).toEqual($injector);
@@ -810,7 +812,7 @@ describe('injector', function() {
       function instanceLookupInModule(name) { throw Error('FAIL'); }
       expect(function() {
         createInjector([function($provide) {
-          $provide.value('name', 'angular')
+          $provide.value('name', 'angular');
         }, instanceLookupInModule]);
       }).toThrow('Unknown provider: name from ' + String(instanceLookupInModule));
     });
