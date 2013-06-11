@@ -35,7 +35,7 @@ module.exports = function(grunt) {
     },
     simplemocha: {
       options: {
-        ignoreLeaks: false,
+        ignoreLeaks: true,
         reporter: 'list'
       },
 

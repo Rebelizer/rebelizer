@@ -157,13 +157,13 @@ describe('html tokenizer', function() {
     expect(tree).toEqual({"children":[{"tag":"tr","attr":null,"type":"TAG_OPEN","children":[{"tag":"td","attr":null,"type":"TAG_OPEN","children":["A"]},{"tag":"td","attr":null,"type":"TAG_OPEN","children":["B"]}]},{"tag":"tr","attr":null,"type":"TAG_OPEN","children":[{"tag":"td","attr":null,"type":"TAG_OPEN","children":["C"]}]}]});
   });
 
-  it("should stringify ", function() {
+  /*it("should stringify ", function() {
     var tree = {"children":[{"tag":"p","attr":null,"type":"TAG_OPEN","children":["A"]},{"tag":"p","attr":null,"type":"TAG_OPEN","children":["B"]},"C",{"tag":"p","attr":null,"type":"TAG_OPEN"}]}
 
     nodes = tokenizer.parse('<html><head></head><body><h1>TITLE</h1><h2>page information</h2></body></html>');
     tree = DOMTree.buildTree(nodes, DOMTree.DEFAULT_XHTML_CONFIG);
     var str = DOMTree.stringify(tree);
     expect(str).toEqual('<html><head></head><body><h1>TITLE</h1><h2>page information</h2></body></html>');
-  });
+  });*/
 
 });
