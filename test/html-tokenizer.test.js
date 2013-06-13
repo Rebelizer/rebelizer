@@ -1,17 +1,14 @@
 require('expectations');
 
-var util = require('util')
-  , fs = require('fs')
-  , pegjs = require('pegjs');
+var fs = require('fs')
+  , tree = require('../lib/dom-tree')
 
 describe('html tokenizer', function() {
 
   var parser;
 
   before(function(done){
-
-    parser = pegjs.buildParser(fs.readFileSync('./peg/html-tokenizer.peg').toString());
-    done();
+    tree.tokenizer(false, function(err, p) {parser = p; done();})
   });
 
   it("should parse empty string", function() {
