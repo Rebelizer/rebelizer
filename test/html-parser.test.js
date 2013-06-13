@@ -1,10 +1,6 @@
 require('expectations');
 
-var fs = require('fs')
-  , path = require('path')
-  , PEG = require('pegjs')
-  , DOMTree = require('../lib/dom-tree')
-  , tokenizerPath = path.resolve(__dirname, '../peg/html-tokenizer.peg');
+var DOMTree = require('../lib/dom-tree');
 
 describe('html tokenizer', function() {
 
@@ -12,17 +8,11 @@ describe('html tokenizer', function() {
 
   before(function(done){
 
-    fs.readFile(tokenizerPath, 'utf8', function (err, data) {
-      if(err) {
-        return done(err);
-      }
-
-      data += 'NON_PARSE_TAGS = "script"i'; //NON_PARSE_TAGS = "script"i / "jade"i';
-
-      tokenizer = PEG.buildParser(data);
-
+    DOMTree.tokenizer(false, function(err, tok) {
+      tokenizer = tok;
       done();
     });
+
   });
 
   it("should build basic balanced tree", function() {
