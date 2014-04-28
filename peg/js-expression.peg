@@ -1,0 +1,103 @@
+{
+  var refMax = 0, arrayIndex = 0;
+}
+
+start = watch
+
+identifier = char:[a-zA-Z0-9 \t"'$_-]+ {
+ return char.join('').replace(/["']/g,'')
+}
+
+separator = "."
+
+path = separator? ident:identifier {
+  return ident;
+}
+
+dereference = path:path+ {
+  if(path.length == 1) {
+    return 'typeof ' + path[0] + ' !== "undefined" && ' + path[0] + ' !== null ? ' + path[0] + ' : void 0';
+  }
+
+  var code = 'typeof ' + path[0] + ' !== "undefined" && ' + path[0] + ' !== null ? ';
+
+  for(var i = 1, length = path.length - 1, ref = path[0]; i < length; i++) {
+    _ref = '_ref' + i;
+    code += '(' + _ref + ' = ' + ref + '["' + path[i] + '"]) != null ? ';
+    ref = _ref;
+  }
+
+  code += ref + '["' + path[length] + '"]';
+
+  while(length--) {
+    code += ' : void 0';
+  }
+
+  if(refMax < (path.length - 2)) {
+    refMax = path.length - 2;
+  }
+
+  return code;
+}
+
+arrayelement = "[" child:(array / dereference) "]" {
+  return child;
+}
+
+array = base:dereference child:arrayelement+ {
+  var _refA, ref = ('_refA'+arrayIndex);
+
+  var code = '(' + ref + ' = ' + base + ') != null ? ';
+  for(var i = 0, length = child.length -1 ; i < length; i++) {
+
+    _refA = '_refA' + (++arrayIndex);
+    code += '(' + _refA + ' = ' + ref + '[' + child[i] + ']) != null ? ';
+
+    ref = _refA;
+  }
+
+  code += ref + '[' + child[child.length - 1] + ']';
+
+  do {
+    code += ' : void 0';
+  } while(length--)
+
+  return code;
+}
+
+foo = start:array separator path:path+ {
+  var ref = '_refA' + (++arrayIndex);
+  var code = '(' + ref + ' = ' + start + ') != null ? ';
+
+  for(var i = 0, length = path.length - 1; i < length; i++) {
+    _ref = '_ref' + i;
+    code += '(' + _ref + ' = ' + ref + '[' + path[i] + ']) != null ? ';
+    ref = _ref;
+  }
+
+  if(length == 0) {
+    code += ref + '[' + path[0] + ']';
+  } else {
+    code += ref + '[' + path[length - 1] + ']';
+  }
+
+  do {
+    code += ' : void 0';
+  } while(length--)
+
+  return code;
+}
+
+watch = code:(foo / array / dereference) {
+  var verables = [];
+
+  do {
+    verables.push('_ref'+refMax);
+  } while(refMax-- > 1)
+
+  if(arrayIndex > 0) do {
+    verables.push('_refA'+arrayIndex);
+  } while(arrayIndex-- > 1)
+
+  return {code:code, verables:'var ' + verables.join(',')}
+}

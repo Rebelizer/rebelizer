@@ -16,7 +16,7 @@
 
 start = content
 
-NON_PARSE_TAGS = "script"i
+// NON_PARSE_TAGS = "script"i
 
 TAG_OPEN                                = '<'
 TAG_CLOSE                               = '>'
@@ -94,9 +94,10 @@ ELEMENT = TAG_OPEN WHITESPACE? tag:LABEL WHITESPACE attr:ATTRIBUTE* TAG_CLOSE   
 
 // special tags to ignore parsing and return raw text block inside the tags
 
-INGORE_BEGIN = tag:TAG_OPEN NON_PARSE_TAGS WHITESPACE? attr:ATTRIBUTE* TAG_CLOSE text:(!INGORE_END .)* end:INGORE_END {
+INGORE_BEGIN = TAG_OPEN tag:NON_PARSE_TAGS WHITESPACE? attr:ATTRIBUTE* TAG_CLOSE text:(!INGORE_END .)* end:INGORE_END {
   return {
     tag: tag,
+    type: 'NON_PARSE_TAGS',
     attr: attr,
     text: flattenArg(text,1).join(''),
     end: end

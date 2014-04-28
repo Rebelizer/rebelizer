@@ -8,7 +8,7 @@ describe('html tokenizer', function() {
 
   before(function(done){
 
-    DOMTree.tokenizer(false, function(err, tok) {
+    DOMTree.tokenizer(['myWidget'], function(err, tok) {
       tokenizer = tok;
       done();
     });
@@ -145,6 +145,43 @@ describe('html tokenizer', function() {
     nodes = tokenizer.parse('<tr><td>A</td><td>B</td><tr><td>C</td></tr>');
     tree = DOMTree.buildTree(nodes, DOMTree.DEFAULT_XHTML_CONFIG);
     expect(tree).toEqual({"children":[{"tag":"tr","attr":null,"type":"TAG_OPEN","children":[{"tag":"td","attr":null,"type":"TAG_OPEN","children":["A"]},{"tag":"td","attr":null,"type":"TAG_OPEN","children":["B"]}]},{"tag":"tr","attr":null,"type":"TAG_OPEN","children":[{"tag":"td","attr":null,"type":"TAG_OPEN","children":["C"]}]}]});
+  });
+
+  it("should handel non parse tags", function() {
+    var nodes = tokenizer.parse('<script src="uri"/>');
+    var tree = DOMTree.buildTree(nodes, DOMTree.DEFAULT_XHTML_CONFIG);
+    expect(tree).toEqual({"children":[{"tag":"script","type": "NON_PARSE_TAGS","attr":[{"key":"src","value":"uri"}],"type":"TAG_SELF_CLOSING"}]});
+
+    var nodes = tokenizer.parse('<script src="uri"></script>');
+    var tree = DOMTree.buildTree(nodes, DOMTree.DEFAULT_XHTML_CONFIG);
+    expect(tree).toEqual({"children":[{"tag":"script","type": "NON_PARSE_TAGS","attr":[{"key":"src","value":"uri"}],"text":"","end":{"tag":"script","attr":[],"type":"TAG_CLOSE"}}]});
+
+    var nodes = tokenizer.parse('<script src="uri"><p><span>{{name}}</span></p></script>');
+    var tree = DOMTree.buildTree(nodes, DOMTree.DEFAULT_XHTML_CONFIG);
+    expect(tree).toEqual({"children":[{"tag":"script","type": "NON_PARSE_TAGS","attr":[{"key":"src","value":"uri"}],"text":"<p><span>{{name}}</span></p>","end":{"tag":"script","attr":[],"type":"TAG_CLOSE"}}]});
+
+    var nodes = tokenizer.parse('<myWidget data-name="foobar"><p>{{name}}</p></myWidget>');
+    var tree = DOMTree.buildTree(nodes, DOMTree.DEFAULT_XHTML_CONFIG);
+    expect(tree).toEqual({"children":[{"tag":"myWidget","type": "NON_PARSE_TAGS","attr":[{"key":"data-name","value":"foobar"}],"text":"<p>{{name}}</p>","end":{"tag":"myWidget","attr":[],"type":"TAG_CLOSE"}}]});
+  });
+
+  it("should ignore case", function() {
+
+    var nodes = tokenizer.parse('<P>A<p>B</p>C</p>');
+    var tree = DOMTree.buildTree(nodes, DOMTree.DEFAULT_XHTML_CONFIG);
+    expect(tree).toEqual({"children":[{"tag":"P","attr":null,"type":"TAG_OPEN","children":["A"]},{"tag":"p","attr":null,"type":"TAG_OPEN","children":["B"]},"C",{"tag":"p","attr":null,"type":"TAG_OPEN"}]});
+
+    var nodes = tokenizer.parse('<mywidget data-name="foobar"><p>{{name}}</p></mywidget>');
+    var tree = DOMTree.buildTree(nodes, DOMTree.DEFAULT_XHTML_CONFIG);
+    expect(tree).toEqual({"children":[{"tag":"mywidget","type": "NON_PARSE_TAGS","attr":[{"key":"data-name","value":"foobar"}],"text":"<p>{{name}}</p>","end":{"tag":"mywidget","attr":[],"type":"TAG_CLOSE"}}]});
+
+    var nodes = tokenizer.parse('<ScrIpt src="uri"/>');
+    var tree = DOMTree.buildTree(nodes, DOMTree.DEFAULT_XHTML_CONFIG);
+    expect(tree).toEqual({"children":[{"tag":"ScrIpt","type": "NON_PARSE_TAGS","attr":[{"key":"src","value":"uri"}],"type":"TAG_SELF_CLOSING"}]});
+
+    nodes = tokenizer.parse('<Br/>'); // <html><br></br>
+    tree = DOMTree.buildTree(nodes, DOMTree.DEFAULT_XHTML_CONFIG);
+    expect(tree).toEqual({ children: [ { tag: 'Br', attr: null, type: 'TAG_SELF_CLOSING' } ] });
   });
 
   /*it("should stringify ", function() {

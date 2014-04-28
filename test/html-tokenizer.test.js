@@ -173,6 +173,17 @@ describe('html tokenizer', function() {
     expect(result).toEqual([{tag:"hello", attr:null, type:"TAG_CLOSE"}]);
   });
 
+  it("should handle non parse tags", function() {
+    var result = parser.parse("<script src=\"uri\"/>");
+    expect(result).toEqual([{"tag":"script","type": "NON_PARSE_TAGS","attr":[{"key":"src","value":"uri"}],"type":"TAG_SELF_CLOSING"}]);
+
+    var result = parser.parse("<script src=\"uri\"></script>");
+    expect(result).toEqual([{"tag":"script","type": "NON_PARSE_TAGS","attr":[{"key":"src","value":"uri"}],"text":"","end":{"tag":"script","attr":[],"type":"TAG_CLOSE"}}]);
+
+    var result = parser.parse("<script src=\"uri\"><p><span></span></p></script>");
+    expect(result).toEqual([{"tag":"script","type": "NON_PARSE_TAGS","attr":[{"key":"src","value":"uri"}],"text":"<p><span></span></p>","end":{"tag":"script","attr":[],"type":"TAG_CLOSE"}}]);
+  });
+
   it("should handle comments", function() {
     var result = parser.parse("<!-- -->");
     expect(result).toEqual([{type:"COMMENT",value:" "}]);
